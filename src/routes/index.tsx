@@ -1,7 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Zap, Users, Timer, Trophy, Plus, X } from "lucide-react";
-import { useQuiz, totalScore, roundPlayed, finalists } from "@/lib/quiz-store";
+import {
+  useQuiz,
+  totalScore,
+  roundPlayed,
+  groupsForRound,
+  bracketForIndex,
+  groupNamesForParticipants,
+  GROUP_SIZE,
+} from "@/lib/quiz-store";
 import { POINTS_CORRECT, POINTS_WRONG, QUESTION_TIME, ROUND_TAGLINES } from "@/lib/quiz-data";
 
 export const Route = createFileRoute("/")({
