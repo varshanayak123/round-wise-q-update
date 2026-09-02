@@ -15,9 +15,14 @@ export function bracketForIndex(index: number, total: number): 1 | 2 {
   return index < Math.ceil(total / 2) ? 1 : 2;
 }
 
-export function groupNamesForParticipants(count: number, size = GROUP_SIZE) {
-  const n = Math.max(2, Math.ceil(count / size));
+export function groupNames(count: number) {
+  const n = Math.max(2, Math.floor(count) || 0);
   return Array.from({ length: n }, (_, i) => `Group ${i + 1}`);
+}
+
+export function groupNamesForParticipants(count: number, size = GROUP_SIZE) {
+  const per = Math.max(1, Math.floor(size) || 1);
+  return groupNames(Math.ceil(Math.max(0, count) / per));
 }
 
 const KEY = "fff-quiz-state-v1";

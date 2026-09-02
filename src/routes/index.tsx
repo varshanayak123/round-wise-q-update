@@ -8,6 +8,7 @@ import {
   groupsForRound,
   bracketForIndex,
   groupNamesForParticipants,
+  groupNames,
   GROUP_SIZE,
 } from "@/lib/quiz-store";
 import { POINTS_CORRECT, POINTS_WRONG, QUESTION_TIME, ROUND_TAGLINES } from "@/lib/quiz-data";
@@ -36,6 +37,8 @@ function Home() {
   const { groups, hydrated, setGroups, resetAll } = useQuiz();
   const [names, setNames] = useState<string[]>(["Group 1", "Group 2", "Group 3", "Group 4"]);
   const [participants, setParticipants] = useState(20);
+  const [perGroup, setPerGroup] = useState(GROUP_SIZE);
+  const [groupCount, setGroupCount] = useState(4);
 
 
   return (
@@ -93,24 +96,56 @@ function Home() {
 
           {hydrated && groups.length === 0 ? (
             <div className="mt-5 space-y-3">
-              <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-secondary/40 p-3">
-                <label className="text-xs font-semibold text-muted-foreground" htmlFor="participants">
-                  Participants
-                </label>
-                <input
-                  id="participants"
-                  type="number"
-                  min={2}
-                  value={participants}
-                  onChange={(e) => setParticipants(Number(e.target.value))}
-                  className="w-24 rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
-                />
-                <button
-                  onClick={() => setNames(groupNamesForParticipants(participants))}
-                  className="btn-ghost hover:bg-secondary"
-                >
-                  Build groups of {GROUP_SIZE}
-                </button>
+              <div className="space-y-3 rounded-xl border border-border bg-secondary/40 p-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className="text-xs font-semibold text-muted-foreground" htmlFor="participants">
+                    Participants
+                  </label>
+                  <input
+                    id="participants"
+                    type="number"
+                    min={2}
+                    value={participants}
+                    onChange={(e) => setParticipants(Number(e.target.value))}
+                    className="w-24 rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                  />
+                  <label className="text-xs font-semibold text-muted-foreground" htmlFor="perGroup">
+                    Members per group
+                  </label>
+                  <input
+                    id="perGroup"
+                    type="number"
+                    min={1}
+                    value={perGroup}
+                    onChange={(e) => setPerGroup(Number(e.target.value))}
+                    className="w-20 rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                  />
+                  <button
+                    onClick={() => setNames(groupNamesForParticipants(participants, perGroup))}
+                    className="btn-ghost hover:bg-secondary"
+                  >
+                    Build groups
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className="text-xs font-semibold text-muted-foreground" htmlFor="groupCount">
+                    Or number of groups
+                  </label>
+                  <input
+                    id="groupCount"
+                    type="number"
+                    min={2}
+                    value={groupCount}
+                    onChange={(e) => setGroupCount(Number(e.target.value))}
+                    className="w-20 rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                  />
+                  <button
+                    onClick={() => setNames(groupNames(groupCount))}
+                    className="btn-ghost hover:bg-secondary"
+                  >
+                    Create groups
+                  </button>
+                </div>
               </div>
               <p className="text-xs text-muted-foreground">
                 The first half of the groups plays Round 1 only, the second half plays Round 2 only.
