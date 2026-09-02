@@ -126,6 +126,9 @@ function Home() {
                     placeholder={`Group ${i + 1}`}
                     className="w-full rounded-xl border border-input bg-secondary/50 px-4 py-2.5 text-sm outline-none focus:border-primary"
                   />
+                  <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-[10px] font-semibold text-muted-foreground">
+                    R{bracketForIndex(i, names.length)}
+                  </span>
                   {names.length > 2 && (
                     <button
                       onClick={() => setNames(names.filter((_, idx) => idx !== i))}
