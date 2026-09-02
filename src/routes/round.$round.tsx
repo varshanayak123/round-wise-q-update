@@ -9,7 +9,15 @@ import {
   ROUND_TAGLINES,
   ROUND_TITLES,
 } from "@/lib/quiz-data";
-import { finalists, roundPlayed, totalScore, useQuiz, type Group } from "@/lib/quiz-store";
+import {
+  finalUnlocked,
+  finalists,
+  groupsForRound,
+  roundPlayed,
+  totalScore,
+  useQuiz,
+  type Group,
+} from "@/lib/quiz-store";
 
 export const Route = createFileRoute("/round/$round")({
   params: {
