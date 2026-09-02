@@ -173,7 +173,7 @@ function RoundPage() {
                   );
                 })}
               </div>
-              {eligible.every((g) => roundPlayed(g, r)) && (
+              {eligible.length > 0 && eligible.every((g) => roundPlayed(g, r)) && (
                 <div className="mt-6 rounded-xl border border-primary/40 bg-primary/10 p-4 text-sm">
                   Round {r} is complete for all groups.
                   <div className="mt-3 flex flex-wrap gap-3">
