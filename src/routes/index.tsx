@@ -145,6 +145,9 @@ function Home() {
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     {g.name}
+                    <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                      {g.bracket === 1 ? "Round 1 only" : "Round 2 only"}
+                    </span>
                   </span>
                   <span className="font-mono text-sm text-primary">{totalScore(g)} pts</span>
                 </div>
