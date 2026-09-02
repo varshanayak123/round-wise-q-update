@@ -8,6 +8,7 @@ import {
   groupsForRound,
   bracketForIndex,
   groupNamesForParticipants,
+  groupNames,
   GROUP_SIZE,
 } from "@/lib/quiz-store";
 import { POINTS_CORRECT, POINTS_WRONG, QUESTION_TIME, ROUND_TAGLINES } from "@/lib/quiz-data";
@@ -36,6 +37,8 @@ function Home() {
   const { groups, hydrated, setGroups, resetAll } = useQuiz();
   const [names, setNames] = useState<string[]>(["Group 1", "Group 2", "Group 3", "Group 4"]);
   const [participants, setParticipants] = useState(20);
+  const [perGroup, setPerGroup] = useState(GROUP_SIZE);
+  const [groupCount, setGroupCount] = useState(4);
 
 
   return (
