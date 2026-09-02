@@ -109,8 +109,8 @@ function RoundPage() {
             <div>
               <h2 className="text-lg font-bold">Round 3 is locked</h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Every group must finish Round 1 and Round 2 first. The two groups with the highest
-                combined score will qualify for the finale.
+                Every Bracket A group must finish Round 1 and every Bracket B group must finish
+                Round 2. Only the highest scorer from each bracket qualifies for the finale.
               </p>
               <Link to="/" className="btn-ghost mt-5 hover:bg-secondary">
                 <Home className="size-4" /> Back to home
