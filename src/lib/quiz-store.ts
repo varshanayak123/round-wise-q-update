@@ -73,6 +73,7 @@ export function useQuiz() {
       groups: names.map((name, i) => ({
         id: `g${i + 1}-${Date.now()}`,
         name,
+        bracket: bracketForIndex(i, names.length),
         scores: {},
       })),
     });
