@@ -169,7 +169,7 @@ function Home() {
           </p>
           <div className="mt-5 space-y-3">
             {[1, 2, 3].map((r) => {
-              const pool = r === 3 ? top2 : groups;
+              const pool = groupsForRound(groups, r);
               const done =
                 pool.length > 0 && pool.every((g) => roundPlayed(g, r));
               return (
