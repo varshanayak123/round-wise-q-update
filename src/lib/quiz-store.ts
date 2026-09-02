@@ -3,8 +3,22 @@ import { useCallback, useEffect, useState } from "react";
 export type Group = {
   id: string;
   name: string;
+  /** 1 = plays Round 1 only, 2 = plays Round 2 only. */
+  bracket: 1 | 2;
   scores: Record<number, number>;
 };
+
+export const GROUP_SIZE = 5;
+
+/** Split groups in half: first half plays Round 1, second half plays Round 2. */
+export function bracketForIndex(index: number, total: number): 1 | 2 {
+  return index < Math.ceil(total / 2) ? 1 : 2;
+}
+
+export function groupNamesForParticipants(count: number, size = GROUP_SIZE) {
+  const n = Math.max(2, Math.ceil(count / size));
+  return Array.from({ length: n }, (_, i) => `Group ${i + 1}`);
+}
 
 const KEY = "fff-quiz-state-v1";
 
