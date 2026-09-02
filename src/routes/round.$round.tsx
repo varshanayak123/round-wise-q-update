@@ -51,11 +51,9 @@ function RoundPage() {
   const [finished, setFinished] = useState<{ group: Group; score: number } | null>(null);
 
   const top2 = finalists(groups);
-  const eligible = r === 3 ? top2 : groups;
+  const eligible = groupsForRound(groups, r);
   const questions = QUESTIONS[r] ?? [];
-  const round12Done =
-    groups.length > 0 && groups.every((g) => roundPlayed(g, 1) && roundPlayed(g, 2));
-  const locked = r === 3 && !round12Done;
+  const locked = r === 3 && !finalUnlocked(groups);
 
   useEffect(() => {
     setActiveGroup(null);
