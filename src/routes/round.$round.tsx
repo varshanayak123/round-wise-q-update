@@ -9,7 +9,15 @@ import {
   ROUND_TAGLINES,
   ROUND_TITLES,
 } from "@/lib/quiz-data";
-import { finalists, roundPlayed, totalScore, useQuiz, type Group } from "@/lib/quiz-store";
+import {
+  finalUnlocked,
+  finalists,
+  groupsForRound,
+  roundPlayed,
+  totalScore,
+  useQuiz,
+  type Group,
+} from "@/lib/quiz-store";
 
 export const Route = createFileRoute("/round/$round")({
   params: {
@@ -43,11 +51,9 @@ function RoundPage() {
   const [finished, setFinished] = useState<{ group: Group; score: number } | null>(null);
 
   const top2 = finalists(groups);
-  const eligible = r === 3 ? top2 : groups;
+  const eligible = groupsForRound(groups, r);
   const questions = QUESTIONS[r] ?? [];
-  const round12Done =
-    groups.length > 0 && groups.every((g) => roundPlayed(g, 1) && roundPlayed(g, 2));
-  const locked = r === 3 && !round12Done;
+  const locked = r === 3 && !finalUnlocked(groups);
 
   useEffect(() => {
     setActiveGroup(null);
@@ -103,8 +109,8 @@ function RoundPage() {
             <div>
               <h2 className="text-lg font-bold">Round 3 is locked</h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Every group must finish Round 1 and Round 2 first. The two groups with the highest
-                combined score will qualify for the finale.
+                Every Bracket A group must finish Round 1 and every Bracket B group must finish
+                Round 2. Only the highest scorer from each bracket qualifies for the finale.
               </p>
               <Link to="/" className="btn-ghost mt-5 hover:bg-secondary">
                 <Home className="size-4" /> Back to home
@@ -115,9 +121,36 @@ function RoundPage() {
               <h2 className="text-lg font-bold">
                 {r === 3 ? "Finalists — pick who plays" : "Select the group that is playing"}
               </h2>
-              {r === 3 && (
+              {r === 3 ? (
+                <div className="mt-3 space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Qualified groups — the top scorer of Round 1 and of Round 2.
+                  </p>
+                  {top2.map((g, i) => (
+                    <div
+                      key={g.id}
+                      className="flex items-center justify-between rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm"
+                    >
+                      <span className="font-semibold">
+                        {g.name}{" "}
+                        <span className="text-muted-foreground">
+                          · Round {i === 0 ? 1 : 2} winner
+                        </span>
+                      </span>
+                      <span className="font-mono text-primary">
+                        {g.scores[i === 0 ? 1 : 2] ?? 0} pts
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Qualified by combined Round 1 + Round 2 score.
+                  Only Bracket {r === 1 ? "A" : "B"} groups play this round.
+                </p>
+              )}
+              {eligible.length === 0 && (
+                <p className="mt-4 text-sm text-muted-foreground">
+                  No groups assigned to this round.
                 </p>
               )}
               <div className="mt-5 space-y-3">
@@ -140,7 +173,7 @@ function RoundPage() {
                   );
                 })}
               </div>
-              {eligible.every((g) => roundPlayed(g, r)) && (
+              {eligible.length > 0 && eligible.every((g) => roundPlayed(g, r)) && (
                 <div className="mt-6 rounded-xl border border-primary/40 bg-primary/10 p-4 text-sm">
                   Round {r} is complete for all groups.
                   <div className="mt-3 flex flex-wrap gap-3">

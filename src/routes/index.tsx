@@ -1,7 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Zap, Users, Timer, Trophy, Plus, X } from "lucide-react";
-import { useQuiz, totalScore, roundPlayed, finalists } from "@/lib/quiz-store";
+import {
+  useQuiz,
+  totalScore,
+  roundPlayed,
+  groupsForRound,
+  bracketForIndex,
+  groupNamesForParticipants,
+  GROUP_SIZE,
+} from "@/lib/quiz-store";
 import { POINTS_CORRECT, POINTS_WRONG, QUESTION_TIME, ROUND_TAGLINES } from "@/lib/quiz-data";
 
 export const Route = createFileRoute("/")({
@@ -26,9 +34,9 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const { groups, hydrated, setGroups, resetAll } = useQuiz();
-  const [names, setNames] = useState<string[]>(["Group A", "Group B", "Group C"]);
+  const [names, setNames] = useState<string[]>(["Group 1", "Group 2", "Group 3", "Group 4"]);
+  const [participants, setParticipants] = useState(20);
 
-  const top2 = finalists(groups);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6">
@@ -85,6 +93,29 @@ function Home() {
 
           {hydrated && groups.length === 0 ? (
             <div className="mt-5 space-y-3">
+              <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-secondary/40 p-3">
+                <label className="text-xs font-semibold text-muted-foreground" htmlFor="participants">
+                  Participants
+                </label>
+                <input
+                  id="participants"
+                  type="number"
+                  min={2}
+                  value={participants}
+                  onChange={(e) => setParticipants(Number(e.target.value))}
+                  className="w-24 rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                />
+                <button
+                  onClick={() => setNames(groupNamesForParticipants(participants))}
+                  className="btn-ghost hover:bg-secondary"
+                >
+                  Build groups of {GROUP_SIZE}
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                The first half of the groups plays Round 1 only, the second half plays Round 2 only.
+                The top scorer of each half qualifies for Round 3.
+              </p>
               {names.map((n, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <input
@@ -95,6 +126,9 @@ function Home() {
                     placeholder={`Group ${i + 1}`}
                     className="w-full rounded-xl border border-input bg-secondary/50 px-4 py-2.5 text-sm outline-none focus:border-primary"
                   />
+                  <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-[10px] font-semibold text-muted-foreground">
+                    R{bracketForIndex(i, names.length)}
+                  </span>
                   {names.length > 2 && (
                     <button
                       onClick={() => setNames(names.filter((_, idx) => idx !== i))}
@@ -137,6 +171,9 @@ function Home() {
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     {g.name}
+                    <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                      {g.bracket === 1 ? "Round 1 only" : "Round 2 only"}
+                    </span>
                   </span>
                   <span className="font-mono text-sm text-primary">{totalScore(g)} pts</span>
                 </div>
@@ -161,7 +198,7 @@ function Home() {
           </p>
           <div className="mt-5 space-y-3">
             {[1, 2, 3].map((r) => {
-              const pool = r === 3 ? top2 : groups;
+              const pool = groupsForRound(groups, r);
               const done =
                 pool.length > 0 && pool.every((g) => roundPlayed(g, r));
               return (

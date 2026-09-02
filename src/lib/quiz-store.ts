@@ -3,8 +3,22 @@ import { useCallback, useEffect, useState } from "react";
 export type Group = {
   id: string;
   name: string;
+  /** 1 = plays Round 1 only, 2 = plays Round 2 only. */
+  bracket: 1 | 2;
   scores: Record<number, number>;
 };
+
+export const GROUP_SIZE = 5;
+
+/** Split groups in half: first half plays Round 1, second half plays Round 2. */
+export function bracketForIndex(index: number, total: number): 1 | 2 {
+  return index < Math.ceil(total / 2) ? 1 : 2;
+}
+
+export function groupNamesForParticipants(count: number, size = GROUP_SIZE) {
+  const n = Math.max(2, Math.ceil(count / size));
+  return Array.from({ length: n }, (_, i) => `Group ${i + 1}`);
+}
 
 const KEY = "fff-quiz-state-v1";
 
@@ -19,7 +33,13 @@ function read(): QuizState {
     if (!raw) return empty;
     const parsed = JSON.parse(raw) as QuizState;
     if (!parsed || !Array.isArray(parsed.groups)) return empty;
-    return parsed;
+    // Backfill brackets for state saved before bracket support.
+    return {
+      groups: parsed.groups.map((g, i) => ({
+        ...g,
+        bracket: g.bracket === 1 || g.bracket === 2 ? g.bracket : bracketForIndex(i, parsed.groups.length),
+      })),
+    };
   } catch {
     return empty;
   }
@@ -53,6 +73,7 @@ export function useQuiz() {
       groups: names.map((name, i) => ({
         id: `g${i + 1}-${Date.now()}`,
         name,
+        bracket: bracketForIndex(i, names.length),
         scores: {},
       })),
     });
@@ -85,14 +106,42 @@ export function roundComplete(groups: Group[], round: number, eligible?: Group[]
   return pool.length > 0 && pool.every((g) => roundPlayed(g, round));
 }
 
-/** Top 2 groups by combined score of rounds 1 & 2. */
+/** Groups belonging to a bracket (1 plays Round 1, 2 plays Round 2). */
+export function bracketGroups(groups: Group[], bracket: 1 | 2) {
+  return groups.filter((g) => g.bracket === bracket);
+}
+
+/** Winner of a bracket = highest score in that bracket's own round. */
+export function bracketWinner(groups: Group[], bracket: 1 | 2) {
+  const pool = bracketGroups(groups, bracket).filter((g) => roundPlayed(g, bracket));
+  if (pool.length === 0) return null;
+  return [...pool].sort((a, b) => (b.scores[bracket] ?? 0) - (a.scores[bracket] ?? 0))[0]!;
+}
+
+/** The two Round 3 qualifiers: Round 1 winner and Round 2 winner. */
 export function finalists(groups: Group[]) {
-  return [...groups]
-    .sort(
-      (a, b) =>
-        (b.scores[1] ?? 0) + (b.scores[2] ?? 0) - ((a.scores[1] ?? 0) + (a.scores[2] ?? 0)),
-    )
-    .slice(0, 2);
+  return [bracketWinner(groups, 1), bracketWinner(groups, 2)].filter(
+    (g): g is Group => g !== null,
+  );
+}
+
+/** Groups allowed to play a given round. */
+export function groupsForRound(groups: Group[], round: number) {
+  if (round === 1) return bracketGroups(groups, 1);
+  if (round === 2) return bracketGroups(groups, 2);
+  return finalists(groups);
+}
+
+/** Round 3 unlocks once both brackets have finished their own round. */
+export function finalUnlocked(groups: Group[]) {
+  const a = bracketGroups(groups, 1);
+  const b = bracketGroups(groups, 2);
+  return (
+    a.length > 0 &&
+    b.length > 0 &&
+    a.every((g) => roundPlayed(g, 1)) &&
+    b.every((g) => roundPlayed(g, 2))
+  );
 }
 
 export function leaderboard(groups: Group[]) {

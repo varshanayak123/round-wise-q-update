@@ -11,9 +11,9 @@ export const ROUND_TITLES: Record<number, string> = {
 };
 
 export const ROUND_TAGLINES: Record<number, string> = {
-  1: "All groups play. Basics of programming and logic.",
-  2: "All groups play. Tougher data structures and code output.",
-  3: "Only the top 2 groups from Rounds 1 & 2 qualify.",
+  1: "Bracket A groups only. Basics of programming and logic.",
+  2: "Bracket B groups only. Tougher data structures and code output.",
+  3: "Only the Round 1 winner and the Round 2 winner qualify.",
 };
 
 export const QUESTION_TIME = 30;
