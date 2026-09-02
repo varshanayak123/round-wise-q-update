@@ -34,9 +34,9 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const { groups, hydrated, setGroups, resetAll } = useQuiz();
-  const [names, setNames] = useState<string[]>(["Group A", "Group B", "Group C"]);
+  const [names, setNames] = useState<string[]>(["Group 1", "Group 2", "Group 3", "Group 4"]);
+  const [participants, setParticipants] = useState(20);
 
-  const top2 = finalists(groups);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6">
