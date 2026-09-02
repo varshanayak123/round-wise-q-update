@@ -33,7 +33,13 @@ function read(): QuizState {
     if (!raw) return empty;
     const parsed = JSON.parse(raw) as QuizState;
     if (!parsed || !Array.isArray(parsed.groups)) return empty;
-    return parsed;
+    // Backfill brackets for state saved before bracket support.
+    return {
+      groups: parsed.groups.map((g, i) => ({
+        ...g,
+        bracket: g.bracket === 1 || g.bracket === 2 ? g.bracket : bracketForIndex(i, parsed.groups.length),
+      })),
+    };
   } catch {
     return empty;
   }
