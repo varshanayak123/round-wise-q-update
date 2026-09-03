@@ -179,6 +179,9 @@ function RoundPage() {
                   );
                 })}
               </div>
+              {r === 3 && eligible.length === 2 && eligible.every((g) => roundPlayed(g, 3)) && (
+                <FinalWinner finalists={eligible} />
+              )}
               {eligible.length > 0 && eligible.every((g) => roundPlayed(g, r)) && (
                 <div className="mt-6 rounded-xl border border-primary/40 bg-primary/10 p-4 text-sm">
                   Round {r} is complete for all groups.
@@ -357,6 +360,34 @@ function RoundResult({
         </button>
         <Link to="/leaderboard" className="btn-ghost hover:bg-secondary">
           <Trophy className="size-4" /> Leaderboard
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function FinalWinner({ finalists: pair }: { finalists: Group[] }) {
+  const sorted = [...pair].sort((a, b) => (b.scores[3] ?? 0) - (a.scores[3] ?? 0));
+  const winner = sorted[0]!;
+  const runnerUp = sorted[1]!;
+  return (
+    <div className="mt-6 rounded-xl border border-primary/40 bg-primary/10 p-6 text-center">
+      <span className="accent-gradient mx-auto grid size-12 place-items-center rounded-2xl">
+        <Trophy className="size-6 text-primary-foreground" />
+      </span>
+      <h3 className="mt-4 font-display text-2xl font-black">WINNER</h3>
+      <p className="mt-2 text-lg font-bold">{winner.name}</p>
+      <p className="font-mono text-sm text-primary">Final round score: {winner.scores[3] ?? 0}</p>
+      <p className="mt-4 text-sm text-muted-foreground">
+        Runner-up: <span className="font-semibold text-foreground">{runnerUp.name}</span> ·{" "}
+        {runnerUp.scores[3] ?? 0} pts
+      </p>
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <Link to="/" className="btn-primary hover:btn-primary-hover">
+          <Home className="size-4" /> Back to Home
+        </Link>
+        <Link to="/leaderboard" className="btn-ghost hover:bg-secondary">
+          <Trophy className="size-4" /> View Leaderboard
         </Link>
       </div>
     </div>
