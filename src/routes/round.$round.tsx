@@ -122,26 +122,32 @@ function RoundPage() {
                 {r === 3 ? "Finalists — pick who plays" : "Select the group that is playing"}
               </h2>
               {r === 3 ? (
-                <div className="mt-3 space-y-2">
+                <div className="mt-3 space-y-3">
+                  <p className="font-mono text-xs tracking-[0.3em] text-accent">FINALISTS</p>
+                  <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+                    {top2.map((g, i) => (
+                      <div key={g.id} className="contents">
+                        <div className="rounded-xl border border-primary/40 bg-primary/10 px-4 py-4 text-center">
+                          <p className="text-[11px] font-semibold tracking-wider text-muted-foreground">
+                            Round {g.qualifiedFromRound ?? (i === 0 ? 1 : 2)} Winner
+                          </p>
+                          <p className="mt-1 text-base font-bold">{g.name}</p>
+                          <p className="mt-1 font-mono text-sm text-primary">
+                            Score: {g.scores[g.qualifiedFromRound ?? (i === 0 ? 1 : 2)] ?? 0}
+                          </p>
+                        </div>
+                        {i === 0 && (
+                          <span className="text-center font-display text-sm font-black text-muted-foreground">
+                            VS
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                   <p className="text-sm text-muted-foreground">
-                    Qualified groups — the top scorer of Round 1 and of Round 2.
+                    2 teams qualified for the final round. Groups that did not qualify cannot start
+                    Round 3.
                   </p>
-                  {top2.map((g, i) => (
-                    <div
-                      key={g.id}
-                      className="flex items-center justify-between rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm"
-                    >
-                      <span className="font-semibold">
-                        {g.name}{" "}
-                        <span className="text-muted-foreground">
-                          · Round {i === 0 ? 1 : 2} winner
-                        </span>
-                      </span>
-                      <span className="font-mono text-primary">
-                        {g.scores[i === 0 ? 1 : 2] ?? 0} pts
-                      </span>
-                    </div>
-                  ))}
                 </div>
               ) : (
                 <p className="mt-2 text-sm text-muted-foreground">
