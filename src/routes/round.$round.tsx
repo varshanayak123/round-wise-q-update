@@ -207,10 +207,12 @@ function QuizRunner({
 }: {
   group: Group;
   questions: { q: string; options: string[]; answer: number }[];
-  onDone: (score: number) => void;
+  onDone: (score: number, correct: number, timeSpent: number) => void;
 }) {
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [correct, setCorrect] = useState(0);
+  const [startedAt] = useState(() => Date.now());
   const [picked, setPicked] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
 
@@ -234,11 +236,13 @@ function QuizRunner({
   const answer = (i: number) => {
     if (picked !== null) return;
     setPicked(i);
+    if (i === question.answer) setCorrect((c) => c + 1);
     setScore((s) => s + (i === question.answer ? POINTS_CORRECT : POINTS_WRONG));
   };
 
   const next = () => {
-    if (index + 1 >= questions.length) onDone(score);
+    if (index + 1 >= questions.length)
+      onDone(score, correct, (Date.now() - startedAt) / 1000);
     else setIndex(index + 1);
   };
 
