@@ -126,16 +126,19 @@ export function useQuiz() {
       existing[round] = score;
       const total = [1, 2, 3].reduce((a, r) => a + (existing[r] ?? 0), 0);
 
+      const patch: Record<string, number> = {
+        total_score: total,
+        current_round: round,
+      };
+      patch[`round_${round}_score`] = score;
+      patch[`round_${round}_correct`] = correct;
+      patch[`round_${round}_time`] = timeSpent;
+
       await supabase
         .from("teams")
-        .update({
-          [`round_${round}_score`]: score,
-          [`round_${round}_correct`]: correct,
-          [`round_${round}_time`]: timeSpent,
-          total_score: total,
-          current_round: round,
-        })
+        .update(patch as never)
         .eq("id", groupId);
+
 
       await supabase.rpc("recalculate_qualification");
       setState(await fetchGroups());
