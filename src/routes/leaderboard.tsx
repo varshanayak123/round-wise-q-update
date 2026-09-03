@@ -44,6 +44,7 @@ function LeaderboardPage() {
             <thead className="text-left text-xs tracking-wider text-muted-foreground">
               <tr className="border-b border-border">
                 <th className="px-5 py-4">#</th>
+                <th className="px-5 py-4">Team</th>
                 <th className="px-5 py-4">Group</th>
                 <th className="px-5 py-4">R1</th>
                 <th className="px-5 py-4">R2</th>
@@ -56,6 +57,7 @@ function LeaderboardPage() {
                 <tr key={g.id} className="border-b border-border/60 last:border-0">
                   <td className="px-5 py-4 font-mono text-muted-foreground">{i + 1}</td>
                   <td className="px-5 py-4 font-semibold">{g.name}</td>
+                  <td className="px-5 py-4 text-muted-foreground">{g.name}</td>
                   {[1, 2, 3].map((r) => (
                     <td key={r} className="px-5 py-4 font-mono text-muted-foreground">
                       {g.scores[r] ?? "—"}
