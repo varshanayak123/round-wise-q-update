@@ -21,7 +21,7 @@ export const Route = createFileRoute("/leaderboard")({
 });
 
 function LeaderboardPage() {
-  const { groups } = useQuiz();
+  const { groups, hydrated } = useQuiz();
   const ranked = leaderboard(groups);
 
   return (
@@ -30,7 +30,9 @@ function LeaderboardPage() {
         <Trophy className="size-7 text-accent" /> Leaderboard
       </h1>
 
-      {ranked.length === 0 ? (
+      {!hydrated ? (
+        <p className="mt-6 text-sm text-muted-foreground">Loading live scores…</p>
+      ) : ranked.length === 0 ? (
         <p className="mt-6 text-sm text-muted-foreground">
           No groups yet. Set them up on the{" "}
           <Link to="/" className="text-primary underline">
@@ -44,6 +46,7 @@ function LeaderboardPage() {
             <thead className="text-left text-xs tracking-wider text-muted-foreground">
               <tr className="border-b border-border">
                 <th className="px-5 py-4">#</th>
+                <th className="px-5 py-4">Team</th>
                 <th className="px-5 py-4">Group</th>
                 <th className="px-5 py-4">R1</th>
                 <th className="px-5 py-4">R2</th>
@@ -56,6 +59,7 @@ function LeaderboardPage() {
                 <tr key={g.id} className="border-b border-border/60 last:border-0">
                   <td className="px-5 py-4 font-mono text-muted-foreground">{i + 1}</td>
                   <td className="px-5 py-4 font-semibold">{g.name}</td>
+                  <td className="px-5 py-4 text-muted-foreground">{g.name}</td>
                   {[1, 2, 3].map((r) => (
                     <td key={r} className="px-5 py-4 font-mono text-muted-foreground">
                       {g.scores[r] ?? "—"}

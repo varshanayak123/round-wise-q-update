@@ -90,8 +90,8 @@ function RoundPage() {
           key={activeGroup.id}
           group={activeGroup}
           questions={questions}
-          onDone={(score) => {
-            recordScore(activeGroup.id, r, score);
+          onDone={(score, correct, timeSpent) => {
+            void recordScore(activeGroup.id, r, score, correct, timeSpent);
             setFinished({ group: activeGroup, score });
           }}
         />
@@ -122,26 +122,32 @@ function RoundPage() {
                 {r === 3 ? "Finalists — pick who plays" : "Select the group that is playing"}
               </h2>
               {r === 3 ? (
-                <div className="mt-3 space-y-2">
+                <div className="mt-3 space-y-3">
+                  <p className="font-mono text-xs tracking-[0.3em] text-accent">FINALISTS</p>
+                  <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+                    {top2.map((g, i) => (
+                      <div key={g.id} className="contents">
+                        <div className="rounded-xl border border-primary/40 bg-primary/10 px-4 py-4 text-center">
+                          <p className="text-[11px] font-semibold tracking-wider text-muted-foreground">
+                            Round {g.qualifiedFromRound ?? (i === 0 ? 1 : 2)} Winner
+                          </p>
+                          <p className="mt-1 text-base font-bold">{g.name}</p>
+                          <p className="mt-1 font-mono text-sm text-primary">
+                            Score: {g.scores[g.qualifiedFromRound ?? (i === 0 ? 1 : 2)] ?? 0}
+                          </p>
+                        </div>
+                        {i === 0 && (
+                          <span className="text-center font-display text-sm font-black text-muted-foreground">
+                            VS
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                   <p className="text-sm text-muted-foreground">
-                    Qualified groups — the top scorer of Round 1 and of Round 2.
+                    2 teams qualified for the final round. Groups that did not qualify cannot start
+                    Round 3.
                   </p>
-                  {top2.map((g, i) => (
-                    <div
-                      key={g.id}
-                      className="flex items-center justify-between rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm"
-                    >
-                      <span className="font-semibold">
-                        {g.name}{" "}
-                        <span className="text-muted-foreground">
-                          · Round {i === 0 ? 1 : 2} winner
-                        </span>
-                      </span>
-                      <span className="font-mono text-primary">
-                        {g.scores[i === 0 ? 1 : 2] ?? 0} pts
-                      </span>
-                    </div>
-                  ))}
                 </div>
               ) : (
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -173,6 +179,9 @@ function RoundPage() {
                   );
                 })}
               </div>
+              {r === 3 && eligible.length === 2 && eligible.every((g) => roundPlayed(g, 3)) && (
+                <FinalWinner finalists={eligible} />
+              )}
               {eligible.length > 0 && eligible.every((g) => roundPlayed(g, r)) && (
                 <div className="mt-6 rounded-xl border border-primary/40 bg-primary/10 p-4 text-sm">
                   Round {r} is complete for all groups.
@@ -207,10 +216,12 @@ function QuizRunner({
 }: {
   group: Group;
   questions: { q: string; options: string[]; answer: number }[];
-  onDone: (score: number) => void;
+  onDone: (score: number, correct: number, timeSpent: number) => void;
 }) {
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [correct, setCorrect] = useState(0);
+  const [startedAt] = useState(() => Date.now());
   const [picked, setPicked] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
 
@@ -234,11 +245,13 @@ function QuizRunner({
   const answer = (i: number) => {
     if (picked !== null) return;
     setPicked(i);
+    if (i === question.answer) setCorrect((c) => c + 1);
     setScore((s) => s + (i === question.answer ? POINTS_CORRECT : POINTS_WRONG));
   };
 
   const next = () => {
-    if (index + 1 >= questions.length) onDone(score);
+    if (index + 1 >= questions.length)
+      onDone(score, correct, (Date.now() - startedAt) / 1000);
     else setIndex(index + 1);
   };
 
@@ -347,6 +360,34 @@ function RoundResult({
         </button>
         <Link to="/leaderboard" className="btn-ghost hover:bg-secondary">
           <Trophy className="size-4" /> Leaderboard
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function FinalWinner({ finalists: pair }: { finalists: Group[] }) {
+  const sorted = [...pair].sort((a, b) => (b.scores[3] ?? 0) - (a.scores[3] ?? 0));
+  const winner = sorted[0]!;
+  const runnerUp = sorted[1]!;
+  return (
+    <div className="mt-6 rounded-xl border border-primary/40 bg-primary/10 p-6 text-center">
+      <span className="accent-gradient mx-auto grid size-12 place-items-center rounded-2xl">
+        <Trophy className="size-6 text-primary-foreground" />
+      </span>
+      <h3 className="mt-4 font-display text-2xl font-black">WINNER</h3>
+      <p className="mt-2 text-lg font-bold">{winner.name}</p>
+      <p className="font-mono text-sm text-primary">Final round score: {winner.scores[3] ?? 0}</p>
+      <p className="mt-4 text-sm text-muted-foreground">
+        Runner-up: <span className="font-semibold text-foreground">{runnerUp.name}</span> ·{" "}
+        {runnerUp.scores[3] ?? 0} pts
+      </p>
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <Link to="/" className="btn-primary hover:btn-primary-hover">
+          <Home className="size-4" /> Back to Home
+        </Link>
+        <Link to="/leaderboard" className="btn-ghost hover:bg-secondary">
+          <Trophy className="size-4" /> View Leaderboard
         </Link>
       </div>
     </div>
