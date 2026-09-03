@@ -90,8 +90,8 @@ function RoundPage() {
           key={activeGroup.id}
           group={activeGroup}
           questions={questions}
-          onDone={(score) => {
-            recordScore(activeGroup.id, r, score);
+          onDone={(score, correct, timeSpent) => {
+            void recordScore(activeGroup.id, r, score, correct, timeSpent);
             setFinished({ group: activeGroup, score });
           }}
         />
