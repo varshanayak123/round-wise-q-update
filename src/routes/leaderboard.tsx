@@ -21,7 +21,7 @@ export const Route = createFileRoute("/leaderboard")({
 });
 
 function LeaderboardPage() {
-  const { groups } = useQuiz();
+  const { groups, hydrated } = useQuiz();
   const ranked = leaderboard(groups);
 
   return (
@@ -30,7 +30,9 @@ function LeaderboardPage() {
         <Trophy className="size-7 text-accent" /> Leaderboard
       </h1>
 
-      {ranked.length === 0 ? (
+      {!hydrated ? (
+        <p className="mt-6 text-sm text-muted-foreground">Loading live scores…</p>
+      ) : ranked.length === 0 ? (
         <p className="mt-6 text-sm text-muted-foreground">
           No groups yet. Set them up on the{" "}
           <Link to="/" className="text-primary underline">
