@@ -14,13 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      teams: {
+        Row: {
+          bracket: number
+          created_at: string
+          current_round: number
+          group_name: string
+          id: string
+          position: number
+          qualified_for_final: boolean
+          qualified_from_round: number | null
+          round_1_correct: number
+          round_1_score: number | null
+          round_1_time: number
+          round_2_correct: number
+          round_2_score: number | null
+          round_2_time: number
+          round_3_correct: number
+          round_3_score: number | null
+          round_3_time: number
+          team_name: string
+          total_score: number
+          updated_at: string
+        }
+        Insert: {
+          bracket?: number
+          created_at?: string
+          current_round?: number
+          group_name: string
+          id?: string
+          position?: number
+          qualified_for_final?: boolean
+          qualified_from_round?: number | null
+          round_1_correct?: number
+          round_1_score?: number | null
+          round_1_time?: number
+          round_2_correct?: number
+          round_2_score?: number | null
+          round_2_time?: number
+          round_3_correct?: number
+          round_3_score?: number | null
+          round_3_time?: number
+          team_name: string
+          total_score?: number
+          updated_at?: string
+        }
+        Update: {
+          bracket?: number
+          created_at?: string
+          current_round?: number
+          group_name?: string
+          id?: string
+          position?: number
+          qualified_for_final?: boolean
+          qualified_from_round?: number | null
+          round_1_correct?: number
+          round_1_score?: number | null
+          round_1_time?: number
+          round_2_correct?: number
+          round_2_score?: number | null
+          round_2_time?: number
+          round_3_correct?: number
+          round_3_score?: number | null
+          round_3_time?: number
+          team_name?: string
+          total_score?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      recalculate_qualification: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
