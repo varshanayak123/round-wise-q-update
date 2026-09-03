@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Group = {
   id: string;
@@ -6,6 +7,8 @@ export type Group = {
   /** 1 = plays Round 1 only, 2 = plays Round 2 only. */
   bracket: 1 | 2;
   scores: Record<number, number>;
+  qualified: boolean;
+  qualifiedFromRound: 1 | 2 | null;
 };
 
 export const GROUP_SIZE = 5;
@@ -25,77 +28,127 @@ export function groupNamesForParticipants(count: number, size = GROUP_SIZE) {
   return groupNames(Math.ceil(Math.max(0, count) / per));
 }
 
-const KEY = "fff-quiz-state-v1";
+type TeamRow = {
+  id: string;
+  team_name: string;
+  group_name: string;
+  bracket: number;
+  position: number;
+  round_1_score: number | null;
+  round_2_score: number | null;
+  round_3_score: number | null;
+  qualified_for_final: boolean;
+  qualified_from_round: number | null;
+};
 
-export type QuizState = { groups: Group[] };
-
-const empty: QuizState = { groups: [] };
-
-function read(): QuizState {
-  if (typeof window === "undefined") return empty;
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return empty;
-    const parsed = JSON.parse(raw) as QuizState;
-    if (!parsed || !Array.isArray(parsed.groups)) return empty;
-    // Backfill brackets for state saved before bracket support.
-    return {
-      groups: parsed.groups.map((g, i) => ({
-        ...g,
-        bracket: g.bracket === 1 || g.bracket === 2 ? g.bracket : bracketForIndex(i, parsed.groups.length),
-      })),
-    };
-  } catch {
-    return empty;
-  }
+function toGroup(row: TeamRow): Group {
+  const scores: Record<number, number> = {};
+  if (row.round_1_score !== null) scores[1] = row.round_1_score;
+  if (row.round_2_score !== null) scores[2] = row.round_2_score;
+  if (row.round_3_score !== null) scores[3] = row.round_3_score;
+  return {
+    id: row.id,
+    name: row.team_name,
+    bracket: row.bracket === 2 ? 2 : 1,
+    scores,
+    qualified: row.qualified_for_final,
+    qualifiedFromRound:
+      row.qualified_from_round === 1 ? 1 : row.qualified_from_round === 2 ? 2 : null,
+  };
 }
 
-const listeners = new Set<() => void>();
-
-function write(state: QuizState) {
-  window.localStorage.setItem(KEY, JSON.stringify(state));
-  listeners.forEach((l) => l());
+async function fetchGroups(): Promise<Group[]> {
+  const { data, error } = await supabase
+    .from("teams")
+    .select(
+      "id, team_name, group_name, bracket, position, round_1_score, round_2_score, round_3_score, qualified_for_final, qualified_from_round",
+    )
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error || !data) return [];
+  return (data as TeamRow[]).map(toGroup);
 }
 
+/** Shared, database-backed competition state. Supabase is the single source of truth. */
 export function useQuiz() {
-  const [state, setState] = useState<QuizState>(empty);
+  const [groups, setState] = useState<Group[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const sync = () => setState(read());
-    sync();
-    setHydrated(true);
-    listeners.add(sync);
-    window.addEventListener("storage", sync);
+    let alive = true;
+    const sync = async () => {
+      const rows = await fetchGroups();
+      if (!alive) return;
+      setState(rows);
+      setHydrated(true);
+    };
+    void sync();
+
+    const channel = supabase
+      .channel("teams-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "teams" }, () => {
+        void sync();
+      })
+      .subscribe();
+
     return () => {
-      listeners.delete(sync);
-      window.removeEventListener("storage", sync);
+      alive = false;
+      void supabase.removeChannel(channel);
     };
   }, []);
 
-  const setGroups = useCallback((names: string[]) => {
-    write({
-      groups: names.map((name, i) => ({
-        id: `g${i + 1}-${Date.now()}`,
-        name,
-        bracket: bracketForIndex(i, names.length),
-        scores: {},
-      })),
-    });
+  const setGroups = useCallback(async (names: string[]) => {
+    await supabase.from("teams").delete().gte("position", 0);
+    const rows = names.map((name, i) => ({
+      team_name: name,
+      group_name: name,
+      bracket: bracketForIndex(i, names.length),
+      position: i,
+      current_round: bracketForIndex(i, names.length),
+    }));
+    await supabase.from("teams").insert(rows);
+    setState(await fetchGroups());
   }, []);
 
-  const recordScore = useCallback((groupId: string, round: number, score: number) => {
-    const current = read();
-    write({
-      groups: current.groups.map((g) =>
-        g.id === groupId ? { ...g, scores: { ...g.scores, [round]: score } } : g,
-      ),
-    });
+  const recordScore = useCallback(
+    async (groupId: string, round: number, score: number, correct = 0, timeSpent = 0) => {
+      const { data } = await supabase
+        .from("teams")
+        .select("round_1_score, round_2_score, round_3_score")
+        .eq("id", groupId)
+        .maybeSingle();
+
+      const existing = {
+        1: data?.round_1_score ?? null,
+        2: data?.round_2_score ?? null,
+        3: data?.round_3_score ?? null,
+      } as Record<number, number | null>;
+      existing[round] = score;
+      const total = [1, 2, 3].reduce((a, r) => a + (existing[r] ?? 0), 0);
+
+      await supabase
+        .from("teams")
+        .update({
+          [`round_${round}_score`]: score,
+          [`round_${round}_correct`]: correct,
+          [`round_${round}_time`]: timeSpent,
+          total_score: total,
+          current_round: round,
+        })
+        .eq("id", groupId);
+
+      await supabase.rpc("recalculate_qualification");
+      setState(await fetchGroups());
+    },
+    [],
+  );
+
+  const resetAll = useCallback(async () => {
+    await supabase.from("teams").delete().gte("position", 0);
+    setState([]);
   }, []);
 
-  const resetAll = useCallback(() => write(empty), []);
-
-  return { groups: state.groups, hydrated, setGroups, recordScore, resetAll };
+  return { groups, hydrated, setGroups, recordScore, resetAll };
 }
 
 export function totalScore(g: Group) {
@@ -116,11 +169,9 @@ export function bracketGroups(groups: Group[], bracket: 1 | 2) {
   return groups.filter((g) => g.bracket === bracket);
 }
 
-/** Winner of a bracket = highest score in that bracket's own round. */
+/** Winner of a bracket, as decided and stored in the shared database. */
 export function bracketWinner(groups: Group[], bracket: 1 | 2) {
-  const pool = bracketGroups(groups, bracket).filter((g) => roundPlayed(g, bracket));
-  if (pool.length === 0) return null;
-  return [...pool].sort((a, b) => (b.scores[bracket] ?? 0) - (a.scores[bracket] ?? 0))[0]!;
+  return groups.find((g) => g.qualified && g.qualifiedFromRound === bracket) ?? null;
 }
 
 /** The two Round 3 qualifiers: Round 1 winner and Round 2 winner. */
@@ -139,14 +190,7 @@ export function groupsForRound(groups: Group[], round: number) {
 
 /** Round 3 unlocks once both brackets have finished their own round. */
 export function finalUnlocked(groups: Group[]) {
-  const a = bracketGroups(groups, 1);
-  const b = bracketGroups(groups, 2);
-  return (
-    a.length > 0 &&
-    b.length > 0 &&
-    a.every((g) => roundPlayed(g, 1)) &&
-    b.every((g) => roundPlayed(g, 2))
-  );
+  return finalists(groups).length === 2;
 }
 
 export function leaderboard(groups: Group[]) {
