@@ -14,97 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      answers: {
-        Row: {
-          answer_order: number
-          created_at: string
-          id: string
-          is_correct: boolean
-          points_awarded: number
-          question_index: number
-          round: number
-          selected_answer: number
-          submitted_at: string
-          team_id: string
-          updated_at: string
-        }
-        Insert: {
-          answer_order: number
-          created_at?: string
-          id?: string
-          is_correct: boolean
-          points_awarded: number
-          question_index: number
-          round: number
-          selected_answer: number
-          submitted_at?: string
-          team_id: string
-          updated_at?: string
-        }
-        Update: {
-          answer_order?: number
-          created_at?: string
-          id?: string
-          is_correct?: boolean
-          points_awarded?: number
-          question_index?: number
-          round?: number
-          selected_answer?: number
-          submitted_at?: string
-          team_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "answers_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      question_state: {
-        Row: {
-          completed_at: string | null
-          created_at: string
-          question_index: number
-          round: number
-          started_at: string
-          status: string
-          updated_at: string
-          winner_team_id: string | null
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string
-          question_index: number
-          round: number
-          started_at?: string
-          status?: string
-          updated_at?: string
-          winner_team_id?: string | null
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string
-          question_index?: number
-          round?: number
-          started_at?: string
-          status?: string
-          updated_at?: string
-          winner_team_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "question_state_winner_team_id_fkey"
-            columns: ["winner_team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       teams: {
         Row: {
           bracket: number
@@ -179,30 +88,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      complete_question: {
-        Args: { _question_index: number; _round: number }
-        Returns: undefined
-      }
-      finalize_round: { Args: { _round: number }; Returns: undefined }
       recalculate_qualification: { Args: never; Returns: undefined }
-      refresh_team_round_score: {
-        Args: { _round: number; _team_id: string }
-        Returns: undefined
-      }
-      start_question: {
-        Args: { _question_index: number; _round: number }
-        Returns: undefined
-      }
-      submit_answer: {
-        Args: {
-          _correct_index: number
-          _question_index: number
-          _round: number
-          _selected: number
-          _team_id: string
-        }
-        Returns: Json
-      }
     }
     Enums: {
       [_ in never]: never
