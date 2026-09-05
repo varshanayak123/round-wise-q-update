@@ -64,6 +64,66 @@ export type Database = {
           },
         ]
       }
+      game_state: {
+        Row: {
+          created_at: string
+          current_question: number
+          current_round: number
+          id: string
+          paused_at: string | null
+          question_ends_at: string | null
+          question_started_at: string | null
+          state_version: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_question?: number
+          current_round?: number
+          id?: string
+          paused_at?: string | null
+          question_ends_at?: string | null
+          question_started_at?: string | null
+          state_version?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_question?: number
+          current_round?: number
+          id?: string
+          paused_at?: string | null
+          question_ends_at?: string | null
+          question_started_at?: string | null
+          state_version?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      question_keys: {
+        Row: {
+          correct_index: number
+          created_at: string
+          question_index: number
+          round: number
+        }
+        Insert: {
+          correct_index: number
+          created_at?: string
+          question_index: number
+          round: number
+        }
+        Update: {
+          correct_index?: number
+          created_at?: string
+          question_index?: number
+          round?: number
+        }
+        Relationships: []
+      }
       question_state: {
         Row: {
           completed_at: string | null
@@ -179,6 +239,111 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_end_question: {
+        Args: never
+        Returns: {
+          created_at: string
+          current_question: number
+          current_round: number
+          id: string
+          paused_at: string | null
+          question_ends_at: string | null
+          question_started_at: string | null
+          state_version: number
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "game_state"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_pause: {
+        Args: never
+        Returns: {
+          created_at: string
+          current_question: number
+          current_round: number
+          id: string
+          paused_at: string | null
+          question_ends_at: string | null
+          question_started_at: string | null
+          state_version: number
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "game_state"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_resume: {
+        Args: never
+        Returns: {
+          created_at: string
+          current_question: number
+          current_round: number
+          id: string
+          paused_at: string | null
+          question_ends_at: string | null
+          question_started_at: string | null
+          state_version: number
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "game_state"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_set_round: {
+        Args: { _round: number }
+        Returns: {
+          created_at: string
+          current_question: number
+          current_round: number
+          id: string
+          paused_at: string | null
+          question_ends_at: string | null
+          question_started_at: string | null
+          state_version: number
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "game_state"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_start_question: {
+        Args: { _question_index: number; _round: number; _seconds?: number }
+        Returns: {
+          created_at: string
+          current_question: number
+          current_round: number
+          id: string
+          paused_at: string | null
+          question_ends_at: string | null
+          question_started_at: string | null
+          state_version: number
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "game_state"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       complete_question: {
         Args: { _question_index: number; _round: number }
         Returns: undefined
@@ -189,6 +354,7 @@ export type Database = {
         Args: { _round: number; _team_id: string }
         Returns: undefined
       }
+      server_now: { Args: never; Returns: string }
       start_question: {
         Args: { _question_index: number; _round: number }
         Returns: undefined
@@ -201,6 +367,10 @@ export type Database = {
           _selected: number
           _team_id: string
         }
+        Returns: Json
+      }
+      submit_live_answer: {
+        Args: { _selected: number; _team_id: string }
         Returns: Json
       }
     }
