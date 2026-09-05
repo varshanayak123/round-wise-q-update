@@ -172,21 +172,16 @@ export function bracketGroups(groups: Group[], bracket: 1 | 2) {
   return groups.filter((g) => g.bracket === bracket);
 }
 
-/** Top 2 qualifiers of a bracket, as decided and stored in the shared database. */
-export function bracketWinners(groups: Group[], bracket: 1 | 2) {
-  const round = bracket;
-  return groups
-    .filter((g) => g.qualified && g.qualifiedFromRound === bracket)
-    .sort((a, b) => (b.scores[round] ?? 0) - (a.scores[round] ?? 0));
-}
-
+/** Winner of a bracket, as decided and stored in the shared database. */
 export function bracketWinner(groups: Group[], bracket: 1 | 2) {
-  return bracketWinners(groups, bracket)[0] ?? null;
+  return groups.find((g) => g.qualified && g.qualifiedFromRound === bracket) ?? null;
 }
 
-/** The four Round 3 qualifiers: top 2 from Round 1 and top 2 from Round 2. */
+/** The two Round 3 qualifiers: Round 1 winner and Round 2 winner. */
 export function finalists(groups: Group[]) {
-  return [...bracketWinners(groups, 1), ...bracketWinners(groups, 2)];
+  return [bracketWinner(groups, 1), bracketWinner(groups, 2)].filter(
+    (g): g is Group => g !== null,
+  );
 }
 
 /** Groups allowed to play a given round. */
@@ -198,7 +193,7 @@ export function groupsForRound(groups: Group[], round: number) {
 
 /** Round 3 unlocks once both brackets have finished their own round. */
 export function finalUnlocked(groups: Group[]) {
-  return finalists(groups).length >= 2;
+  return finalists(groups).length === 2;
 }
 
 export function leaderboard(groups: Group[]) {

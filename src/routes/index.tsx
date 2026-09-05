@@ -20,13 +20,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Team quiz competition with three timed rounds: 30 seconds per question, +5 for correct, -3 for wrong. Top 2 teams per round reach the finale.",
+          "Team quiz competition with three timed rounds: 30 seconds per question, +5 for correct, -3 for wrong. Top 2 groups reach the finale.",
       },
       { property: "og:title", content: "Fastest Finger First | Team Quiz Competition" },
       {
         property: "og:description",
         content:
-          "Three timed rounds, live scoring and a four-team grand finale. Set up your groups and start the quiz.",
+          "Three timed rounds, live scoring and a top-2 grand finale. Set up your groups and start the quiz.",
       },
     ],
   }),
@@ -71,8 +71,8 @@ function Home() {
           { icon: Users, title: "Group vs group", text: "Every group plays the same round separately." },
           {
             icon: Trophy,
-            title: "Top 2 per round in the finale",
-            text: "Top 2 teams from Round 1 and Top 2 teams from Round 2 advance to the Final Round.",
+            title: "Top 2 in the finale",
+            text: "Only the two highest scoring groups play Round 3.",
           },
         ].map((f) => (
           <div key={f.title} className="panel p-6">
@@ -149,7 +149,7 @@ function Home() {
               </div>
               <p className="text-xs text-muted-foreground">
                 The first half of the groups plays Round 1 only, the second half plays Round 2 only.
-                Top 2 teams from Round 1 and Top 2 teams from Round 2 advance to the Final Round.
+                The top scorer of each half qualifies for Round 3.
               </p>
               {names.map((n, i) => (
                 <div key={i} className="flex items-center gap-2">
