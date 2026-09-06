@@ -110,7 +110,7 @@ function RoundPage() {
               <h2 className="text-lg font-bold">Round 3 is locked</h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 Every Bracket A group must finish Round 1 and every Bracket B group must finish
-                Round 2. Only the highest scorer from each bracket qualifies for the finale.
+                Round 2. The top 2 scorers from each bracket qualify for the finale.
               </p>
               <Link to="/" className="btn-ghost mt-5 hover:bg-secondary">
                 <Home className="size-4" /> Back to home
@@ -129,7 +129,7 @@ function RoundPage() {
                       <div key={g.id} className="contents">
                         <div className="rounded-xl border border-primary/40 bg-primary/10 px-4 py-4 text-center">
                           <p className="text-[11px] font-semibold tracking-wider text-muted-foreground">
-                            Round {g.qualifiedFromRound ?? (i === 0 ? 1 : 2)} Winner
+                            Round {g.qualifiedFromRound ?? (i === 0 ? 1 : 2)} Finalist
                           </p>
                           <p className="mt-1 text-base font-bold">{g.name}</p>
                           <p className="mt-1 font-mono text-sm text-primary">
@@ -145,8 +145,8 @@ function RoundPage() {
                     ))}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    2 teams qualified for the final round. Groups that did not qualify cannot start
-                    Round 3.
+                    {top2.length} teams qualified for the final round. Groups that did not qualify
+                    cannot start Round 3.
                   </p>
                 </div>
               ) : (
@@ -179,7 +179,7 @@ function RoundPage() {
                   );
                 })}
               </div>
-              {r === 3 && eligible.length === 2 && eligible.every((g) => roundPlayed(g, 3)) && (
+              {r === 3 && eligible.length >= 2 && eligible.every((g) => roundPlayed(g, 3)) && (
                 <FinalWinner finalists={eligible} />
               )}
               {eligible.length > 0 && eligible.every((g) => roundPlayed(g, r)) && (

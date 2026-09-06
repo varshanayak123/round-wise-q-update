@@ -189,9 +189,9 @@ export function groupsForRound(groups: Group[], round: number) {
   return finalists(groups);
 }
 
-/** Round 3 unlocks once both brackets have finished their own round. */
+/** Round 3 unlocks once both brackets have produced their finalists. */
 export function finalUnlocked(groups: Group[]) {
-  return finalists(groups).length === 2;
+  return bracketWinners(groups, 1).length > 0 && bracketWinners(groups, 2).length > 0;
 }
 
 export function leaderboard(groups: Group[]) {
