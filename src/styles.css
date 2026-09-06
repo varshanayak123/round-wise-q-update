@@ -13,6 +13,8 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --font-display: "Orbitron", system-ui, sans-serif;
   --font-sans: "Sora", system-ui, sans-serif;
+  --font-question: "Inter", system-ui, sans-serif;
+  --font-option: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
