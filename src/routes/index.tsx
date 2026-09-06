@@ -71,8 +71,8 @@ function Home() {
           { icon: Users, title: "Group vs group", text: "Every group plays the same round separately." },
           {
             icon: Trophy,
-            title: "Top 2 in the finale",
-            text: "Only the two highest scoring groups play Round 3.",
+            title: "4 finalists",
+            text: "Top 2 teams from Round 1 and Top 2 teams from Round 2 advance to the Final Round.",
           },
         ].map((f) => (
           <div key={f.title} className="panel p-6">
