@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Home, Timer, ArrowRight, CheckCircle2, XCircle, Trophy } from "lucide-react";
 import {
   POINTS_CORRECT,
@@ -18,6 +18,37 @@ import {
   useQuiz,
   type Group,
 } from "@/lib/quiz-store";
+
+function renderRichText(text: string, baseClass: string, codeClass: string) {
+  const codeRe =
+    /(\b(?:int|let|const|var|for|if|while|cout|print|console\.log|System\.out\.println)\b[^;{}]*(?:\{[^}]*\}|\[[^\]]*\]|\([^)]*\))?[^;{}]*[;]?)|([A-Za-z_]\w*\s*[\+\-\*/%]?=\s*[^;{}]*(?:\{[^}]*\}|\[[^\]]*\]|\([^)]*\))?[^;{}]*[;]?)|(\([^)]*[\=\;\<\>\+\-\*/\%0-9][^)]*\))|(\[[^\]]*[\d\,\'\"][^\]]*\])|(\{[^}]*[\=\;\<\>\+\-\*/\%0-9][^}]*\})|("(?:[^"\\]|\\.)*")|('(?:[^'\\]|\\.)*')|(\b[A-Za-z0-9_]+(?:\s*[\+\-\*/%]+\s*[A-Za-z0-9_]+)+(?:\s*(?:==|!=|<=|>=|<|>)\s*[A-Za-z0-9_]+)?)/g;
+  const nodes: ReactNode[] = [];
+  let last = 0;
+  let match: RegExpExecArray | null;
+  while ((match = codeRe.exec(text)) !== null) {
+    if (match.index > last) {
+      nodes.push(
+        <span key={`t-${last}`} className={baseClass}>
+          {text.slice(last, match.index)}
+        </span>,
+      );
+    }
+    nodes.push(
+      <code key={`c-${match.index}`} className={codeClass}>
+        {match[0]}
+      </code>,
+    );
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) {
+    nodes.push(
+      <span key={`t-${last}`} className={baseClass}>
+        {text.slice(last)}
+      </span>,
+    );
+  }
+  return nodes.length ? nodes : <span className={baseClass}>{text}</span>;
+}
 
 export const Route = createFileRoute("/round/$round")({
   params: {
@@ -279,7 +310,9 @@ function QuizRunner({
         <span className="w-10 shrink-0 text-right font-mono text-sm">{timeLeft}s</span>
       </div>
 
-      <h2 className="mt-6 text-xl font-bold leading-snug">{question.q}</h2>
+      <h2 className="mt-6 text-xl font-semibold leading-snug break-words whitespace-normal">
+        {renderRichText(question.q, "font-question", "font-mono text-[0.95em]")}
+      </h2>
 
       <div className="mt-5 grid gap-3">
         {question.options.map((opt, i) => {
@@ -297,9 +330,11 @@ function QuizRunner({
               key={i}
               onClick={() => answer(i)}
               disabled={revealed}
-              className={`flex items-center justify-between rounded-xl border px-4 py-3.5 text-left text-sm font-medium transition-colors ${state}`}
+              className={`flex min-w-0 items-center justify-between rounded-xl border px-4 py-3.5 text-left text-sm font-medium transition-colors ${state}`}
             >
-              <span>{opt}</span>
+              <span className="min-w-0 break-words font-option font-medium">
+                {renderRichText(opt, "font-option font-medium", "font-mono text-[0.95em]")}
+              </span>
               {revealed && isAnswer && <CheckCircle2 className="size-4 text-success" />}
               {revealed && !isAnswer && i === picked && (
                 <XCircle className="size-4 text-destructive" />
